@@ -10,29 +10,55 @@ from Atlas_Connection import Atlas_Connect
 cluster = MongoClient(Atlas_Connect)
 Itemdb = cluster["POE_DOCS"]
 TestCollection = Itemdb["Test_1"]
+CurrencyCollection = Itemdb["Currency"]
+
+
+def Exalt(price, type, stackSize):
+    for x in range(1):
+        random_id = random.randint(1, 1000000000)
+        id_random = str(random_id)
+    post = {"_id": id_random, "Item_Type": type,
+            "price": price, "stackSize": stackSize}
+    print("Inscreting post")
+    CurrencyCollection.insert_one(post)
+    return
 
 
 def post(item_length, list_items):
+
     y = 0
     while y < item_length:
         # gets all the item data
         items_in_index = list_items[y]
         # sometimes certian dicts of json dont have a certian key so this gets around that so the app can run for ever
         try:
-            Item_Name = items_in_index['name']
+            # Item_Name = items_in_index['name']
             Item_Type = items_in_index['typeLine']
-            Item_Ident = items_in_index['identified']
-            Item_desc = items_in_index['descrText']
-            Item_level = items_in_index['ilvl']
-            Item_Explicit = items_in_index['explicitMods']
-            Item_implicit = items_in_index['implicitMods']
-            for x in range(1):
-                random_id = random.randint(1, 1000000000)
-                id_random = str(random_id)
-            Post = {
-                "_id": id_random, "Item_Name": Item_Name, "Item_Base": Item_Type, "Item_Ident": Item_Ident, "Item_desc": Item_desc, "Item_level": Item_level, "Item_Explicit": Item_Explicit, "Item_implicit": Item_implicit}
-            print("Inscerting")
-            TestCollection.insert_one(Post)
+            Item_Stack = items_in_index['stackSize']
+            # Item_Ident = items_in_index['identified']
+            # Item_desc = items_in_index['descrText']
+            # Item_level = items_in_index['ilvl']
+            # Item_Explicit = items_in_index['explicitMods']
+            # Item_implicit = items_in_index['implicitMods']
+            Item_Price = items_in_index['note']
+            Item_extended = items_in_index["extended"]
+            Item_Cat = Item_extended['category']
+            Item_Base_Type = Item_extended['baseType']
+            if Item_Cat == 'currency':
+                if Item_Base_Type == "Exalted Orb":
+                    print("found Currency")
+                    Exalt(price=Item_Price, type=Item_Type, stackSize=Item_Stack)
+            else:
+                continue
+            # print(Item_Cat)
+            # for x in range(1):
+            #     random_id = random.randint(1, 1000000000)
+            #     id_random = str(random_id)
+            # Post = {
+            #     "_id": id_random, "Item_Name": Item_Name, "Item_Base": Item_Type, "Item_Ident": Item_Ident, "Item_desc": Item_desc, "Item_level": Item_level, "Item_Explicit": Item_Explicit, "Item_implicit": Item_implicit, "Price": Item_Price}
+            # print("Inscerting")
+
+            # TestCollection.insert_one(Post)
             # print(Explicit)
         except KeyError:
             null = "null"
@@ -71,13 +97,13 @@ while True:  # loops infinitely
             # filters out anything but the league you are wanting data from
             # this can be anything before items in the json data or nothing at all it just makes the data alot smaller
             if list_index['league'] == 'ETHICAL LEAGUE (PL12057)':
-                print("FOUND IT ")
                 # grabs all the item data form the stashes in that what ever filter you set
                 list_items = list_index['items']
                 # gets length of the item data list
                 item_length = len(list_items)
                 # loops through the item list
                 post(item_length=item_length, list_items=list_items)
+
             x += 1
         # writes next change id to the file so it can be on the current shard
         with open('next_change_id.txt', 'w') as file:
