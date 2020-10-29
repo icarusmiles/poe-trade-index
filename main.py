@@ -78,36 +78,33 @@ def currency(item_length, list_items):
     return
 
 
-# def post(item_length, list_items):
-#
-#     y = 0
-#     while y < item_length:
-#         # gets all the item data
-#         items_in_index = list_items[y]
-#         # sometimes certian dicts of json dont have a certian key so this gets around that so the app can run for ever
-#         try:
-#             # Item_Name = items_in_index['name']
-#             Item_Type = items_in_index['typeLine']
-#             Item_Stack = items_in_index['stackSize']
-#             # Item_Ident = items_in_index['identified']
-#             # Item_desc = items_in_index['descrText']
-#             # Item_level = items_in_index['ilvl']
-#             # Item_Explicit = items_in_index['explicitMods']
-#             # Item_implicit = items_in_index['implicitMods']
-#             Item_Price = items_in_index['note']
-#             Item_extended = items_in_index["extended"]
-#             Item_Cat = Item_extended['category']
-#             Item_Base_Type = Item_extended['baseType']
-#             if Item_Cat == 'currency':
-#                 if Item_Base_Type == "Exalted Orb":
-#                     print("found Currency")
-#                     Exalt(price=Item_Price, type=Item_Type, stackSize=Item_Stack)
-#             else:
-#                 continue
-#         except KeyError:
-#             continue
-#         y += 1
-#     return
+def card(item_length, list_items):
+    x = 0
+    while x < item_length:
+        items_in_index = list_items[x]
+        Item_Base = items_in_index['typeLine']
+        try:
+            Item_Stack_Size = items_in_index['stackSize']
+        except KeyError:
+            Item_Stack_Size = 'N/A'
+        try:
+            Item_Price = items_in_index['note']
+        except KeyError:
+            Item_Price = "N/A"
+        extended = items_in_index["extended"]
+        Category = extended['category']
+        if Category == 'cards':
+            # create a log file and write found currency
+            for y in range(1):
+                random_id = random.randint(1, 1000000000)
+                id_random = str(random_id)
+            CardPost = {"_id": id_random,
+                        "Item_Base": Item_Base, "Item_Price": Item_Price, "Item_Stack_Size": Item_Stack_Size}
+            print("Found a Div Card")
+            CardsCollection.insert_one(CardPost)
+        x += 1
+
+    return
 
 
 while True:  # loops infinitely
@@ -140,13 +137,15 @@ while True:  # loops infinitely
             list_index = json_data[x]
             # filters out anything but the league you are wanting data from
             # this can be anything before items in the json data or nothing at all it just makes the data alot smaller
-            if list_index['league'] == 'ETHICAL LEAGUE (PL12057)':
+            if list_index['league'] == 'Heist':
+                # ETHICAL LEAGUE (PL12057)
                 # grabs all the item data form the stashes in that what ever filter you set
                 list_items = list_index['items']
                 # gets length of the item data list
                 item_length = len(list_items)
                 # loops through the item list
-                currency(item_length=item_length, list_items=list_items)
+                # currency(item_length=item_length, list_items=list_items)
+                card(item_length=item_length, list_items=list_items)
 
             x += 1
         # writes next change id to the file so it can be on the current shard
