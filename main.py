@@ -11,59 +11,103 @@ cluster = MongoClient(Atlas_Connect)
 Itemdb = cluster["POE_DOCS"]
 TestCollection = Itemdb["Test_1"]
 CurrencyCollection = Itemdb["Currency"]
+CardsCollection = Itemdb["Cards"]
+AccessoriesCollection = Itemdb["accessories"]
+GemsCollection = Itemdb["gems"]
+JewelsCollection = Itemdb["Jewels"]
+MapsCollection = Itemdb["Maps"]
+WeaponsCollection = Itemdb["weapons"]
+ArmourCollection = Itemdb["armour"]
+HeistequipmentCollection = Itemdb["heistequipment"]
+################
+###Categories###
+################
+# Currency
+# SubCat: resonator
+
+# Cards
+# No base Type
+
+# accessories
+# SubCat: ring, amulet, belt, trinket,
+
+# gems
+# SubCat: activegem, supportgem
+
+# jewels
+# SubCat: abyss, cluster,
+
+# maps
+# SubCat: fragment, scarab,
+
+# weapons
+# SubCat: staff, onesword, dagger, wand, twoaxe, twosword, twomace, bow, onemace, sceptre, claw, dagger, oneaxe, twoaxe,
+
+# armour
+# SubCat: chest, helmet, gloves, boots, quiver, shield
+
+# heistequipment
+# SubCat: heistreward, contract, heisttool, heistweapon, heistutility,
 
 
-def Exalt(price, type, stackSize):
-    for x in range(1):
-        random_id = random.randint(1, 1000000000)
-        id_random = str(random_id)
-    post = {"_id": id_random, "Item_Type": type,
-            "price": price, "stackSize": stackSize}
-    print("Inscreting post")
-    CurrencyCollection.insert_one(post)
-    return
-
-
-def post(item_length, list_items):
-
-    y = 0
-    while y < item_length:
-        # gets all the item data
-        items_in_index = list_items[y]
-        # sometimes certian dicts of json dont have a certian key so this gets around that so the app can run for ever
+def currency(item_length, list_items):
+    x = 0
+    while x < item_length:
+        items_in_index = list_items[x]
+        Item_Base = items_in_index['typeLine']
         try:
-            # Item_Name = items_in_index['name']
-            Item_Type = items_in_index['typeLine']
-            Item_Stack = items_in_index['stackSize']
-            # Item_Ident = items_in_index['identified']
-            # Item_desc = items_in_index['descrText']
-            # Item_level = items_in_index['ilvl']
-            # Item_Explicit = items_in_index['explicitMods']
-            # Item_implicit = items_in_index['implicitMods']
-            Item_Price = items_in_index['note']
-            Item_extended = items_in_index["extended"]
-            Item_Cat = Item_extended['category']
-            Item_Base_Type = Item_extended['baseType']
-            if Item_Cat == 'currency':
-                if Item_Base_Type == "Exalted Orb":
-                    print("found Currency")
-                    Exalt(price=Item_Price, type=Item_Type, stackSize=Item_Stack)
-            else:
-                continue
-            # print(Item_Cat)
-            # for x in range(1):
-            #     random_id = random.randint(1, 1000000000)
-            #     id_random = str(random_id)
-            # Post = {
-            #     "_id": id_random, "Item_Name": Item_Name, "Item_Base": Item_Type, "Item_Ident": Item_Ident, "Item_desc": Item_desc, "Item_level": Item_level, "Item_Explicit": Item_Explicit, "Item_implicit": Item_implicit, "Price": Item_Price}
-            # print("Inscerting")
-
-            # TestCollection.insert_one(Post)
-            # print(Explicit)
+            Item_Stack_Size = items_in_index['stackSize']
         except KeyError:
-            null = "null"
-        y += 1
+            Item_Stack_Size = "N/A"
+        try:
+            Item_Price = items_in_index['note']
+        except KeyError:
+            Item_Price = "N/A"
+        extended = items_in_index["extended"]
+        Category = extended['category']
+        if Category == 'currency':
+            # create a log file and write found currency
+            for y in range(1):
+                random_id = random.randint(1, 1000000000)
+                id_random = str(random_id)
+            currenyPost = {"_id": id_random,
+                           "Item_Base": Item_Base, "Item_Price": Item_Price, "Item_Stack_Size": Item_Stack_Size}
+            print("Found a Currency")
+            CurrencyCollection.insert_one(currenyPost)
+        x += 1
     return
+
+
+# def post(item_length, list_items):
+#
+#     y = 0
+#     while y < item_length:
+#         # gets all the item data
+#         items_in_index = list_items[y]
+#         # sometimes certian dicts of json dont have a certian key so this gets around that so the app can run for ever
+#         try:
+#             # Item_Name = items_in_index['name']
+#             Item_Type = items_in_index['typeLine']
+#             Item_Stack = items_in_index['stackSize']
+#             # Item_Ident = items_in_index['identified']
+#             # Item_desc = items_in_index['descrText']
+#             # Item_level = items_in_index['ilvl']
+#             # Item_Explicit = items_in_index['explicitMods']
+#             # Item_implicit = items_in_index['implicitMods']
+#             Item_Price = items_in_index['note']
+#             Item_extended = items_in_index["extended"]
+#             Item_Cat = Item_extended['category']
+#             Item_Base_Type = Item_extended['baseType']
+#             if Item_Cat == 'currency':
+#                 if Item_Base_Type == "Exalted Orb":
+#                     print("found Currency")
+#                     Exalt(price=Item_Price, type=Item_Type, stackSize=Item_Stack)
+#             else:
+#                 continue
+#         except KeyError:
+#             continue
+#         y += 1
+#     return
 
 
 while True:  # loops infinitely
@@ -102,7 +146,7 @@ while True:  # loops infinitely
                 # gets length of the item data list
                 item_length = len(list_items)
                 # loops through the item list
-                post(item_length=item_length, list_items=list_items)
+                currency(item_length=item_length, list_items=list_items)
 
             x += 1
         # writes next change id to the file so it can be on the current shard
