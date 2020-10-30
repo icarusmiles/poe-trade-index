@@ -50,60 +50,26 @@ HeistequipmentCollection = Itemdb["heistequipment"]
 # SubCat: heistreward, contract, heisttool, heistweapon, heistutility,
 
 
-def currency(item_length, list_items):
+def post(item_length, list_items):
     x = 0
+    keylist = ['icon', 'name', 'stackSize', 'identified', 'descrText', 'ilvl',
+               'explicitMods', 'implicitMods', 'note', 'baseType', 'typeLine']
     while x < item_length:
         items_in_index = list_items[x]
-        Item_Base = items_in_index['typeLine']
-        try:
-            Item_Stack_Size = items_in_index['stackSize']
-        except KeyError:
-            Item_Stack_Size = "N/A"
-        try:
-            Item_Price = items_in_index['note']
-        except KeyError:
-            Item_Price = "N/A"
+        Post = {}
+        for key in keylist:
+            try:
+                Post[key] = items_in_index[key]
+            except KeyError:
+                continue
         extended = items_in_index["extended"]
-        Category = extended['category']
-        if Category == 'currency':
-            # create a log file and write found currency
-            for y in range(1):
-                random_id = random.randint(1, 1000000000)
-                id_random = str(random_id)
-            currenyPost = {"_id": id_random,
-                           "Item_Base": Item_Base, "Item_Price": Item_Price, "Item_Stack_Size": Item_Stack_Size}
-            print("Found a Currency")
-            CurrencyCollection.insert_one(currenyPost)
+        if extended['category'] == 'currency':
+            print("Found a currency")
+            # CurrencyCollection.insert_one(Post)
+        elif extended["category"] == 'cards':
+            CardsCollection.insert_one(Post)
+
         x += 1
-    return
-
-
-def card(item_length, list_items):
-    x = 0
-    while x < item_length:
-        items_in_index = list_items[x]
-        Item_Base = items_in_index['typeLine']
-        try:
-            Item_Stack_Size = items_in_index['stackSize']
-        except KeyError:
-            Item_Stack_Size = 'N/A'
-        try:
-            Item_Price = items_in_index['note']
-        except KeyError:
-            Item_Price = "N/A"
-        extended = items_in_index["extended"]
-        Category = extended['category']
-        if Category == 'cards':
-            # create a log file and write found currency
-            for y in range(1):
-                random_id = random.randint(1, 1000000000)
-                id_random = str(random_id)
-            CardPost = {"_id": id_random,
-                        "Item_Base": Item_Base, "Item_Price": Item_Price, "Item_Stack_Size": Item_Stack_Size}
-            print("Found a Div Card")
-            CardsCollection.insert_one(CardPost)
-        x += 1
-
     return
 
 
@@ -144,8 +110,7 @@ while True:  # loops infinitely
                 # gets length of the item data list
                 item_length = len(list_items)
                 # loops through the item list
-                # currency(item_length=item_length, list_items=list_items)
-                card(item_length=item_length, list_items=list_items)
+                post(item_length=item_length, list_items=list_items)
 
             x += 1
         # writes next change id to the file so it can be on the current shard
