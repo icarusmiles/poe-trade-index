@@ -9,7 +9,6 @@ import random
 from Atlas_Connection import Atlas_Connect
 cluster = MongoClient(Atlas_Connect)
 Itemdb = cluster["POE_DOCS"]
-TestCollection = Itemdb["Test_1"]
 CurrencyCollection = Itemdb["Currency"]
 CardsCollection = Itemdb["Cards"]
 AccessoriesCollection = Itemdb["accessories"]
@@ -64,10 +63,13 @@ def post(item_length, list_items):
                 continue
         extended = items_in_index["extended"]
         if extended['category'] == 'currency':
-            print("Found a currency")
+            not_i = 1
             # CurrencyCollection.insert_one(Post)
         elif extended["category"] == 'cards':
-            CardsCollection.insert_one(Post)
+            not_i = 1
+            # CardsCollection.insert_one(Post)
+        elif extended["category"] == 'accessories':
+            AccessoriesCollection.insert_one(Post)
 
         x += 1
     return
