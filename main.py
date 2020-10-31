@@ -6,6 +6,7 @@ import requests
 import json
 import time
 import random
+import re
 from Atlas_Connection import Atlas_Connect
 cluster = MongoClient(Atlas_Connect)
 Itemdb = cluster["POE_DOCS"]
@@ -49,10 +50,30 @@ HeistequipmentCollection = Itemdb["heistequipment"]
 # SubCat: heistreward, contract, heisttool, heistweapon, heistutility,
 
 
-def post(item_length, list_items):
+def get_price_override(stashname):
+    priceRegex = "~price [\S]+ [\S]+"
+    buyOutRegex = "~b/o [\S]+ [\S]+"
+    try:
+        if '~price' in stashname:
+            matches = re.match(priceRegex, stashname, re.MULTILINE)
+            # Trim the first match to cut off '~price '
+            stashprice = matches[0][7:]
+            return stashprice
+        elif '~b/o' in stashname:
+            matches = re.match(buyOutRegex, stashname, re.MULTILINE)
+            # Trim the first match to cut off '~b/o '
+            stashprice = matches[0][5:]
+            return stashprice
+    except TypeError:
+        pass
+
+
+def post(item_length, list_items, priceoverride):
     x = 0
+    list_index['stash']
     keylist = ['icon', 'name', 'stackSize', 'identified', 'descrText', 'ilvl',
-               'explicitMods', 'implicitMods', 'note', 'baseType', 'typeLine']
+               'explicitMods', 'implicitMods', 'note', 'baseType', 'typeLine', 'flavourText', 'x', 'y']
+
     while x < item_length:
         items_in_index = list_items[x]
         Post = {}
@@ -62,6 +83,20 @@ def post(item_length, list_items):
             except KeyError:
                 continue
         extended = items_in_index["extended"]
+        try:
+            subcategories = extended['subcategories']
+            Post['subcategories'] = extended['subcategories']
+        except KeyError:
+            pass
+        # If item is not priced, try assigning a tab-wide price
+        try:
+            if priceoverride != None and items_in_index['note'] == '':
+                items_in_index['note'] = priceoverride
+        except KeyError:
+            if priceoverride != None:
+                items_in_index['note'] = priceoverride
+
+            # add subcategory data
         if extended['category'] == 'currency':
             not_i = 1
             # CurrencyCollection.insert_one(Post)
@@ -69,6 +104,12 @@ def post(item_length, list_items):
             not_i = 1
             # CardsCollection.insert_one(Post)
         elif extended["category"] == 'accessories':
+            try:
+                nullnvoid = items_in_index["note"]
+                pass
+            except KeyError:
+                pass
+
             AccessoriesCollection.insert_one(Post)
 
         x += 1
@@ -106,13 +147,20 @@ while True:  # loops infinitely
             # filters out anything but the league you are wanting data from
             # this can be anything before items in the json data or nothing at all it just makes the data alot smaller
             if list_index['league'] == 'Heist':
+                stashname = list_index['stash']
+                if '~' in stashname:
+                    priceoverride = get_price_override(stashname)
+                else:
+                    priceoverride = ''
+                # priceoverride(list_index['Stash'])
                 # ETHICAL LEAGUE (PL12057)
                 # grabs all the item data form the stashes in that what ever filter you set
                 list_items = list_index['items']
                 # gets length of the item data list
                 item_length = len(list_items)
                 # loops through the item list
-                post(item_length=item_length, list_items=list_items)
+                post(item_length=item_length,
+                     list_items=list_items, priceoverride=priceoverride)
 
             x += 1
         # writes next change id to the file so it can be on the current shard
