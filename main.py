@@ -1,3 +1,4 @@
+#Sweez was here :)
 from configparser import ConfigParser
 import pymongo
 from pymongo import MongoClient
